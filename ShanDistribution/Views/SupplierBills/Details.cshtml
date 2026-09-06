@@ -1,0 +1,145 @@
+﻿@model ShanDistribution.Models.SupplierBill
+@{
+    ViewData["Title"] = "Bill Details #" + Model.SBId;
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">@Model.SupplierName | @Model.BillNo</h4>
+            <div>
+                @if (Model.Status != "Complete")
+                {
+                    <a asp-action="Payment" asp-route-id="@Model.SBId" class="btn btn-warning btn-sm me-2 fw-bold">
+                        <i class="bi bi-credit-card"></i> Make Payment
+                    </a>
+                }
+                <a asp-action="Index" class="btn btn-outline-light btn-sm">Back to List</a>
+            </div>
+        </div>
+        <div class="card-body p-4">
+
+            <!-- Summary & Status Header -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded border h-100">
+                        <p class="mb-2"><strong>Supplier:</strong> @Model.SupplierName</p>
+                        <p class="mb-0"><strong>Bill No:</strong> @Model.BillNo</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded border h-100">
+                        <p class="mb-2"><strong>Issue Date:</strong> @Model.Date.ToString("yyyy-MM-dd")</p>
+                        <p class="mb-0 d-flex align-items-center gap-2">
+                            <strong>Status:</strong>
+                            @if (Model.Status == "Complete")
+                            {
+                                <span class="badge bg-success">Complete</span>
+                            }
+                            else if (Model.Status == "Balance")
+                            {
+                                <span class="badge bg-warning text-dark">Balance</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Initial</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <ul class="list-group shadow-sm">
+                        <li class="list-group-item d-flex justify-content-between py-1 small">
+                            <span>Gross Amount:</span> <strong class="text-dark">LKR @Model.Amount.ToString("N2")</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-1 small text-danger">
+                            <span>Discount Received:</span> <strong>- LKR @Model.Discount.ToString("N2")</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-2 border-top">
+                            <span>Net Total Payable:</span> <strong class="text-dark">LKR @Model.TotalAmount.ToString("N2")</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-1 small text-success">
+                            <span>Total Paid:</span> <strong class="fw-bold">LKR @Model.PaidAmount.ToString("N2")</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-1 small text-danger">
+                            <span>Outstanding Balance:</span>
+                            <strong class="fw-bold">
+                                @if (Model.BalanceAmount < 0)
+                                {
+                                    <span>(LKR @Math.Abs(Model.BalanceAmount).ToString("N2"))</span>
+                                }
+                                else
+                                {
+                                    <span>LKR @Model.BalanceAmount.ToString("N2")</span>
+                                }
+                            </strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Purchased Products Table -->
+            <h5 class="mb-3 text-success fw-bold">
+                <i class="bi bi-boxes me-1"></i> Purchased Products
+            </h5>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Product Name</th>
+                            <th class="text-end">Price (LKR)</th>
+                            <th class="text-center">Count</th>
+                            <th class="text-end">Total Price (LKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.BillProducts)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@p.ProductName</td>
+                                <td class="text-end">@p.Price.ToString("N2")</td>
+                                <td class="text-center">@p.Count</td>
+                                <td class="text-end fw-bold">@p.TotalPrice.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                  
+                </table>
+            </div>
+
+            <!-- Payment History Table -->
+            <h5 class="mb-3 text-success fw-bold">
+                <i class="bi bi-clock-history me-1"></i> Payment History
+            </h5>
+            @if (Model.BillPayments != null && Model.BillPayments.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Payment Date</th>
+                                <th class="text-end">Paid Amount (LKR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pay in Model.BillPayments.OrderByDescending(p => p.Date))
+                            {
+                                <tr>
+                                    <td>@pay.Date.ToString("yyyy-MM-dd")</td>
+                                    <td class="fw-bold text-success text-end">LKR @pay.Payment.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-light border text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i> No payments recorded for this bill yet.
+                </div>
+            }
+
+        </div>
+    </div>
+</div>

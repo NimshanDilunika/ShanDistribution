@@ -1,0 +1,53 @@
+﻿@model ShanDistribution.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="card shadow-lg border-0" style="width: 100%; max-width: 420px; border-radius: 12px;">
+        <div class="card-header text-center text-white py-4" style="background-color: #14532d; border-radius: 12px 12px 0 0;">
+            <div class="mb-2">
+                <i class="bi bi-box-seam-fill text-warning fs-1"></i>
+            </div>
+            <h4 class="fw-bold mb-0">ShanDistribution</h4>
+            <span class="small text-white-50">Enterprise Management System</span>
+        </div>
+        
+        <div class="card-body p-4">
+            <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-semibold text-secondary">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+                        <input asp-for="Email" class="form-control" placeholder="name@shandistribution.com" autofocus />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label fw-semibold text-secondary">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
+                        <input asp-for="Password" class="form-control" type="password" placeholder="••••••••" />
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label text-muted small">Remember this device</label>
+                </div>
+
+                <button type="submit" class="btn w-100 py-2 fw-bold text-white shadow-sm" style="background-color: #15803d;">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

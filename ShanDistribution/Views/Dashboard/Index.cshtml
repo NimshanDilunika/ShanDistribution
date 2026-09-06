@@ -1,0 +1,27 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Management Dashboard</h4>
+        </div>
+        <div class="card-body">
+            <h5>Welcome to the Dashboard</h5>
+            <p>This section is accessible to users with <strong>Admin</strong> or <strong>Manager</strong> roles.</p>
+
+            <div class="list-group mt-3">
+                <a asp-controller="Dashboard" asp-action="Reports" class="list-group-item list-group-item-action">
+                    View Reports (Admin, Manager, Rep)
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Dashboard" asp-action="SystemSettings" class="list-group-item list-group-item-action list-group-item-danger">
+                        System Settings (Admin Only)
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

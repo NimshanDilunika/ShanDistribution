@@ -1,0 +1,169 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool IsActive(string controller, string action = null)
+    {
+        bool cMatch = string.Equals(controller, currentController, StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrEmpty(action)) return cMatch;
+        return cMatch && string.Equals(action, currentAction, StringComparison.OrdinalIgnoreCase);
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ShanDistribution</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <!-- Site Styles & Custom Navbar CSS -->
+    <link rel="stylesheet" href="~/css/navbar-custom.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ShanDistribution.styles.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+
+    <style>
+            /* Background image styling with light translucent overlay */
+            body.app-bg-custom {
+                min-height: 100vh;
+                background-image: url('/images/erp-bg.jfif');
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-attachment: fixed;
+                background-size: cover;
+            }
+
+            /* Prevent background from printing on paper / PDF */
+            @@media print {
+                body.app-bg-custom {
+                    background: #ffffff !important;
+                }
+            }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100 app-bg-custom">
+    <header class="no-print">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark navbar-custom mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-box-seam-fill text-white me-1"></i> ShanDistribution
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(IsActive("Home", "Index") ? "active-nav" : "")" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door-fill text-white"></i> Home
+                            </a>
+                        </li>
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            @* Settings Navigation Item (Commented Out)
+                            @if (User.IsInRole("Admin"))
+                            {  
+                                <li class="nav-item">
+                                    <a class="nav-link nav-admin @(IsActive("Dashboard", "SystemSettings") ? "active-nav" : "")" asp-controller="Dashboard" asp-action="SystemSettings">
+                                        <i class="bi bi-gear-fill text-white"></i> Settings
+                                    </a>
+                                </li>
+                            }
+                            *@
+
+                            @* Reports Navigation Item (Commented Out)
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {  
+                                <li class="nav-item">
+                                    <a class="nav-link @(IsActive("Dashboard", "Reports") ? "active-nav" : "")" asp-controller="Dashboard" asp-action="Reports">
+                                        <i class="bi bi-bar-chart-line-fill text-white"></i> Reports
+                                    </a>
+                                </li>
+                            }
+                            *@
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(IsActive("Users") ? "active-nav" : "")" asp-controller="Users" asp-action="Index">
+                                        <i class="bi bi-people-fill text-white"></i> Users
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(IsActive("Suppliers") ? "active-nav" : "")" asp-controller="Suppliers" asp-action="Index">
+                                        <i class="bi bi-truck text-white"></i> Suppliers
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Rep"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(IsActive("Customers") ? "active-nav" : "")" asp-controller="Customers" asp-action="Index">
+                                        <i class="bi bi-person-lines-fill text-white"></i> Customers
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Rep"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(IsActive("Products") ? "active-nav" : "")" asp-controller="Products" asp-action="Index">
+                                        <i class="bi bi-boxes text-white"></i> Products
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(IsActive("SupplierBills") ? "active-nav" : "")" asp-controller="SupplierBills" asp-action="Index">
+                                        <i class="bi bi-journal-text text-white"></i> Bills
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Rep"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(IsActive("CustomerInvoices") ? "active-nav" : "")" asp-controller="CustomerInvoices" asp-action="Index">
+                                        <i class="bi bi-receipt text-white"></i> Invoices
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container flex-grow-1">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted no-print" style="background-color: rgba(255, 255, 255, 0.95);">
+        <div class="container">
+            &copy; 2026 - ShanDistribution - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

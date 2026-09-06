@@ -1,0 +1,95 @@
+﻿@{
+    ViewData["Title"] = "Privacy & Data Protection";
+}
+
+<div class="container-fluid px-0 mt-4">
+    <!-- Header Banner -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white border-start border-4 border-success">
+        <div class="card-body p-3 p-md-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center">
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">
+                        <i class="bi bi-shield-check text-success me-2"></i>System Privacy & Governance Policy
+                    </h4>
+                    <span class="text-muted small">ShanDistribution ERP internal security, authentication, and data retention standards</span>
+                </div>
+                <div class="mt-3 mt-md-0">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-semibold">
+                        <i class="bi bi-lock-fill me-1"></i> Role-Secured Platform
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Content Sections -->
+    <div class="row g-4">
+        <!-- Section 1: Authentication & Access Control -->
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm rounded-3 bg-white h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle p-2 px-3 text-white me-3" style="background-color: #14532d;">
+                            <i class="bi bi-key-fill fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-0">Role-Based Access Control (RBAC)</h6>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Access to customer ledgers, supplier bills, wholesale product pricing, and audit logs is restricted by identity tokens. Only verified accounts with active system privileges can query internal distribution data.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Financial & Customer Ledger Integrity -->
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm rounded-3 bg-white h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle p-2 px-3 text-white me-3" style="background-color: #15803d;">
+                            <i class="bi bi-file-earmark-lock-fill fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-0">Commercial & Financial Records</h6>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Invoices, supplier batch costs, and customer account receivables are encrypted and processed exclusively for business operations. Data is not shared with third-party tracking services.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Identity & Audit Logs -->
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm rounded-3 bg-white h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle p-2 px-3 text-white me-3" style="background-color: #0f766e;">
+                            <i class="bi bi-fingerprint fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-0">User Identity & Passwords</h6>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        User credentials are encrypted using ASP.NET Core Identity PBKDF2 password hash algorithms. Administrative password changes utilize unique security tokens generated at the point of request.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Data Retention & Compliance -->
+        <div class="col-12 col-md-6">
+            <div class="card border-0 shadow-sm rounded-3 bg-white h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle p-2 px-3 text-white me-3" style="background-color: #ca8a04;">
+                            <i class="bi bi-database-fill-check fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-0">Database Retention & Backups</h6>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Entity deletions are controlled via strict foreign key relationships and permission gates to prevent orphaned transaction records, ensuring continuous compliance with trade accounting requirements.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

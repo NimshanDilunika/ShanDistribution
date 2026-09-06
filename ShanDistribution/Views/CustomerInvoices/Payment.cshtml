@@ -1,0 +1,76 @@
+﻿@model ShanDistribution.ViewModels.MakeCustomerPaymentDto
+
+@{
+    ViewData["Title"] = "Customer Payment";
+    decimal remainingBalance = Model.BalanceAmount > 0 
+        ? Model.BalanceAmount 
+        : (Model.TotalAmount - Model.PaidAmount);
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Make Payment for @Model.InvoiceNo</h4>
+                    <a asp-action="Details" asp-route-id="@Model.CIId" class="btn btn-outline-light btn-sm">Back to Details</a>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Payment" method="post">
+                        <input type="hidden" asp-for="CIId" />
+                        <input type="hidden" asp-for="InvoiceNo" />
+                        <input type="hidden" asp-for="CustomerName" />
+                        <input type="hidden" asp-for="TotalAmount" />
+                        <input type="hidden" asp-for="PaidAmount" />
+                        <input type="hidden" asp-for="BalanceAmount" value="@remainingBalance" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Read-only Summary -->
+                        <div class="mb-3 p-3 bg-light rounded border">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-bold">Customer:</span>
+                                <span>@Model.CustomerName</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-bold">Total Amount:</span>
+                                <span class="fw-bold">@Model.TotalAmount.ToString("C")</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 text-success">
+                                <span class="fw-bold">Paid Amount:</span>
+                                <span class="fw-bold">@Model.PaidAmount.ToString("C")</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-danger">
+                                <span class="fw-bold">Current Balance:</span>
+                                <span class="fw-bold">@remainingBalance.ToString("C")</span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Input -->
+                        <div class="mb-3">
+                            <label asp-for="Payment" class="form-label fw-bold">Payment Amount <span class="text-danger">*</span></label>
+                            <input asp-for="Payment" class="form-control" type="number" step="0.01" min="0.01" placeholder="Enter payment amount" />
+                            <span asp-validation-for="Payment" class="text-danger"></span>
+                        </div>
+
+                        <!-- Payment Date -->
+                        <div class="mb-3">
+                            <label asp-for="Date" class="form-label fw-bold">Payment Date <span class="text-danger">*</span></label>
+                            <input asp-for="Date" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="Date" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Details" asp-route-id="@Model.CIId" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success px-4">Submit Payment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

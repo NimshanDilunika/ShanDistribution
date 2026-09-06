@@ -1,0 +1,62 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ShanDistribution.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav ms-auto align-items-center gap-2">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        var roles = currentUser != null ? await UserManager.GetRolesAsync(currentUser) : new List<string>();
+        var userRole = roles.FirstOrDefault() ?? "No Role";
+        var displayName = !string.IsNullOrWhiteSpace(currentUser?.FirstName)
+            ? $"{currentUser.FirstName} {currentUser?.LastName}".Trim()
+            : User.Identity?.Name;
+
+        <li class="nav-item">
+            <a asp-controller="Account" asp-action="Profile"
+               class="nav-link d-flex align-items-center gap-2 py-1 px-2 rounded"
+               style="color: #ffffff; text-decoration: none; transition: background-color 0.2s;"
+               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.15)'"
+               onmouseout="this.style.backgroundColor='transparent'"
+               title="Click to edit profile">
+
+                <!-- Circular Profile Avatar -->
+                @if (!string.IsNullOrEmpty(currentUser?.ProfilePicture))
+                {
+                    <img src="@currentUser.ProfilePicture"
+                         alt="Avatar"
+                         class="rounded-circle border border-2 border-light shadow-sm"
+                         style="width: 34px; height: 34px; object-fit: cover;" />
+                }
+                else
+                {
+                    <img src="https://ui-avatars.com/api/?name=@displayName&background=ffffff&color=14532d&size=34&bold=true"
+                         alt="Avatar"
+                         class="rounded-circle border border-2 border-light shadow-sm"
+                         style="width: 34px; height: 34px; object-fit: cover;" />
+                }
+
+                <div class="d-flex flex-column text-start lh-1">
+                    <span style="font-size: 0.88rem; font-weight: 700; color: #ffffff;">@displayName</span>
+                    <span style="font-size: 0.72rem; color: #bbf7d0; text-transform: uppercase; font-weight: 600;">@userRole</span>
+                </div>
+            </a>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="btn btn-outline-light btn-sm fw-bold px-2 py-1 ms-1">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="btn btn-outline-light btn-sm fw-bold px-3" asp-controller="Account" asp-action="Login">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+        </li>
+    }
+</ul>

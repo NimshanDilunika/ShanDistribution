@@ -1,0 +1,379 @@
+﻿@{
+    ViewData["Title"] = "New Supplier Bill";
+    var suppliers = ViewBag.Suppliers as List<ShanDistribution.Models.Supplier> ?? new List<ShanDistribution.Models.Supplier>();
+    var products = ViewBag.Products as List<ShanDistribution.Models.Product> ?? new List<ShanDistribution.Models.Product>();
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Create Supplier Bill</h4>
+            <a asp-action="Index" class="btn btn-outline-light btn-sm">Back to Bill List</a>
+        </div>
+        <div class="card-body p-4">
+
+            <!-- Section 1: Bill No, Supplier, and Date -->
+            <div class="row g-3 mb-4 p-3 bg-light rounded border">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Bill No <span class="text-danger">*</span></label>
+                    <input type="text" id="billNo" class="form-control" placeholder="Enter Bill No (e.g. SB-1001)" autocomplete="off" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Supplier <span class="text-danger">*</span></label>
+                    <select id="supplierSelect" class="form-select">
+                        <option value="">-- Choose Supplier --</option>
+                        @foreach (var s in suppliers)
+                        {
+                            <option value="@s.SupplierId" data-name="@s.SupplierName">@s.SupplierName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Date <span class="text-danger">*</span></label>
+                    <input type="date" id="billDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+
+            <!-- Section 2: Product Filter & Manual Price / Count Input -->
+            <div class="card mb-4 border">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h6 class="mb-0">Add Product to Bill</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold">Product Name (Type to search)</label>
+                            <input list="productList" id="productInput" class="form-control" placeholder="Select product..." autocomplete="off" />
+                            <datalist id="productList">
+                                @foreach (var p in products)
+                                {
+                                    <option value="@p.ProductName" data-id="@p.ProductId" data-desc="@p.ProductDescription">
+                                        @p.ProductName - @p.ProductDescription
+                                    </option>
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Unit Price <span class="text-danger">*</span></label>
+                            <input type="number" id="unitPrice" class="form-control" step="0.01" min="0.01" placeholder="0.00" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Count <span class="text-danger">*</span></label>
+                            <input type="number" id="itemCount" class="form-control" min="1" value="1" />
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="btnAddProduct" class="btn btn-success w-100">
+                                Add Product
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Added Products Table -->
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-hover align-middle" id="billTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 25%;">Product Name</th>
+                            <th style="width: 20%;">Description</th>
+                            <th style="width: 15%;">Price</th>
+                            <th style="width: 15%;">Count (Editable)</th>
+                            <th style="width: 10%;">Total</th>
+                            <th style="width: 10%;" class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billTableBody">
+                        <tr id="emptyRow">
+                            <td colspan="7" class="text-center text-muted py-4">No products added yet. Use the selector above to add items.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Section 4: Calculation, Payment & Summary -->
+            <div class="row justify-content-end">
+                <div class="col-md-5">
+                    <div class="card bg-light border shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-bold">Amount:</span>
+                                <span id="lblAmount" class="fw-bold fs-6">0.00</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Discount (%):</span>
+                                <div style="width: 120px;">
+                                    <input type="number" id="discountInput" class="form-control form-control-sm text-end" min="0" max="100" step="0.5" value="0" />
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2 text-muted">
+                                <span>Discount Value:</span>
+                                <span id="lblDiscountVal">0.00</span>
+                            </div>
+
+                            <hr class="my-2" />
+
+                            <div class="d-flex justify-content-between mb-3 text-success">
+                                <span class="fs-5 fw-bold">Total Amount:</span>
+                                <span id="lblTotalAmount" class="fs-5 fw-bold">0.00</span>
+                            </div>
+
+                            <!-- NEW PAYMENT INPUT -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-dark">Payment:</span>
+                                <div style="width: 140px;">
+                                    <input type="number" id="paymentInput" class="form-control form-control-sm text-end" min="0" step="0.01" value="0.00" />
+                                </div>
+                            </div>
+
+                            <!-- REALTIME BALANCE AMOUNT -->
+                            <div class="d-flex justify-content-between mb-3 text-danger">
+                                <span class="fw-bold">Balance Amount:</span>
+                                <span id="lblBalanceAmount" class="fw-bold fs-6">0.00</span>
+                            </div>
+
+                            <button type="button" id="btnSubmitBill" class="btn btn-success w-100 py-2 fs-6">
+                                Submit Supplier Bill
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let billItems = [];
+
+    // Helper to find selected product from datalist options
+    function getSelectedProduct(inputText) {
+        const options = document.querySelectorAll("#productList option");
+        const trimmed = inputText.trim().toLowerCase();
+        
+        for (let opt of options) {
+            const val = opt.value.trim().toLowerCase();
+            const label = (opt.getAttribute("label") || "").trim().toLowerCase();
+            const text = opt.textContent.trim().toLowerCase();
+
+            if (trimmed === val || trimmed === label || trimmed === text) {
+                return {
+                    id: parseInt(opt.getAttribute("data-id")),
+                    name: opt.value.trim(),
+                    desc: opt.getAttribute("data-desc") || ""
+                };
+            }
+        }
+        return null;
+    }
+
+    // Add Product Click
+    document.getElementById("btnAddProduct").addEventListener("click", function () {
+        const input = document.getElementById("productInput");
+        const priceInput = document.getElementById("unitPrice");
+        const countInput = document.getElementById("itemCount");
+
+        const selectedProd = getSelectedProduct(input.value);
+
+        if (!selectedProd) {
+            alert("Please select a valid product from the list.");
+            input.focus();
+            return;
+        }
+
+        const price = parseFloat(priceInput.value);
+        const count = parseInt(countInput.value);
+
+        if (isNaN(price) || price <= 0) {
+            alert("Please enter a valid unit price.");
+            priceInput.focus();
+            return;
+        }
+
+        if (isNaN(count) || count <= 0) {
+            alert("Please enter a valid count.");
+            countInput.focus();
+            return;
+        }
+
+        const existingIndex = billItems.findIndex(i => i.productId === selectedProd.id);
+        if (existingIndex > -1) {
+            billItems[existingIndex].count += count;
+            billItems[existingIndex].price = price;
+            billItems[existingIndex].totalPrice = billItems[existingIndex].count * price;
+        } else {
+            billItems.push({
+                productId: selectedProd.id,
+                productName: selectedProd.name,
+                productDescription: selectedProd.desc,
+                price: price,
+                count: count,
+                totalPrice: count * price
+            });
+        }
+
+        input.value = "";
+        priceInput.value = "";
+        countInput.value = "1";
+
+        renderTable();
+    });
+
+    function renderTable() {
+        const tbody = document.getElementById("billTableBody");
+        tbody.innerHTML = "";
+
+        if (billItems.length === 0) {
+            tbody.innerHTML = `<tr id="emptyRow"><td colspan="7" class="text-center text-muted py-4">No products added yet. Use the selector above to add items.</td></tr>`;
+            calculateSummary();
+            return;
+        }
+
+        billItems.forEach((item, index) => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td class="fw-bold">${item.productName}</td>
+                <td class="text-muted small">${item.productDescription}</td>
+                <td>${item.price.toFixed(2)}</td>
+                <td>
+                    <input type="number" min="1" class="form-control form-control-sm text-center row-count-input" 
+                           data-index="${index}" value="${item.count}" style="max-width: 90px;" />
+                </td>
+                <td class="fw-bold">${item.totalPrice.toFixed(2)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-cancel-row" data-index="${index}">
+                        Delete
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        document.querySelectorAll(".row-count-input").forEach(inp => {
+            inp.addEventListener("input", function () {
+                const idx = parseInt(this.getAttribute("data-index"));
+                let val = parseInt(this.value);
+                if (isNaN(val) || val <= 0) val = 1;
+                billItems[idx].count = val;
+                billItems[idx].totalPrice = val * billItems[idx].price;
+                renderTable();
+            });
+        });
+
+        document.querySelectorAll(".btn-cancel-row").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const idx = parseInt(this.getAttribute("data-index"));
+                billItems.splice(idx, 1);
+                renderTable();
+            });
+        });
+
+        calculateSummary();
+    }
+
+    function calculateSummary() {
+        const subtotal = billItems.reduce((acc, curr) => acc + curr.totalPrice, 0);
+        let discountPercent = parseFloat(document.getElementById("discountInput").value);
+        if (isNaN(discountPercent) || discountPercent < 0) discountPercent = 0;
+        if (discountPercent > 100) discountPercent = 100;
+
+        const discountValue = (subtotal * discountPercent) / 100;
+        const totalAmount = subtotal - discountValue;
+
+        let payment = parseFloat(document.getElementById("paymentInput").value);
+        if (isNaN(payment) || payment < 0) payment = 0;
+
+        const balance = totalAmount - payment;
+
+        document.getElementById("lblAmount").innerText = subtotal.toFixed(2);
+        document.getElementById("lblDiscountVal").innerText = discountValue.toFixed(2);
+        document.getElementById("lblTotalAmount").innerText = totalAmount.toFixed(2);
+        document.getElementById("lblBalanceAmount").innerText = balance.toFixed(2);
+    }
+
+    document.getElementById("discountInput").addEventListener("input", calculateSummary);
+    document.getElementById("paymentInput").addEventListener("input", calculateSummary);
+
+    // Submit Handler
+    document.getElementById("btnSubmitBill").addEventListener("click", async function () {
+        const billNo = document.getElementById("billNo").value.trim();
+        const supplierSelect = document.getElementById("supplierSelect");
+        const supplierId = parseInt(supplierSelect.value);
+        const supplierName = supplierSelect.options[supplierSelect.selectedIndex]?.getAttribute("data-name");
+        const billDate = document.getElementById("billDate").value;
+
+        if (!billNo) {
+            alert("Please enter a Bill No.");
+            document.getElementById("billNo").focus();
+            return;
+        }
+
+        if (!supplierId || !supplierName) {
+            alert("Please select a Supplier.");
+            return;
+        }
+
+        if (!billDate) {
+            alert("Please select a Date.");
+            return;
+        }
+
+        if (billItems.length === 0) {
+            alert("Please add at least one product.");
+            return;
+        }
+
+        const subtotal = billItems.reduce((acc, curr) => acc + curr.totalPrice, 0);
+        let discount = parseFloat(document.getElementById("discountInput").value) || 0;
+        const totalAmount = subtotal - (subtotal * discount / 100);
+        const payment = parseFloat(document.getElementById("paymentInput").value) || 0;
+
+        const payload = {
+            billNo: billNo,
+            supplierId: supplierId,
+            supplierName: supplierName,
+            date: billDate,
+            amount: subtotal,
+            discount: discount,
+            totalAmount: totalAmount,
+            payment: payment,
+            items: billItems
+        };
+
+        this.disabled = true;
+        this.innerText = "Submitting...";
+
+        try {
+            const res = await fetch('@Url.Action("Create", "SupplierBills")', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                alert("Supplier Bill saved successfully!");
+                window.location.href = result.redirectUrl;
+            } else {
+                alert(result.message || "Error saving bill.");
+                document.getElementById("btnSubmitBill").disabled = false;
+                document.getElementById("btnSubmitBill").innerText = "Submit Supplier Bill";
+            }
+        } catch (err) {
+            alert("Server error: " + err.message);
+            document.getElementById("btnSubmitBill").disabled = false;
+            document.getElementById("btnSubmitBill").innerText = "Submit Supplier Bill";
+        }
+    });
+</script>
+}

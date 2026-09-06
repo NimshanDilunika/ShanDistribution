@@ -1,0 +1,430 @@
+﻿@{
+    ViewData["Title"] = "New Customer Invoice";
+    var customers = ViewBag.Customers as List<ShanDistribution.Models.Customer> ?? new List<ShanDistribution.Models.Customer>();
+    var products = ViewBag.Products as List<ShanDistribution.Models.Product> ?? new List<ShanDistribution.Models.Product>();
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Create Customer Invoice</h4>
+            <a asp-action="Index" class="btn btn-outline-light btn-sm">Back to Invoice List</a>
+        </div>
+        <div class="card-body p-4">
+
+            <!-- Section 1: Invoice No, Customer, and Date -->
+            <div class="row g-3 mb-4 p-3 bg-light rounded border">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Invoice No <span class="text-danger">*</span></label>
+                    <input type="text" id="invoiceNo" class="form-control" placeholder="Enter Invoice No (e.g. INV-1001)" autocomplete="off" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Customer <span class="text-danger">*</span></label>
+                    <select id="customerSelect" class="form-select">
+                        <option value="">-- Choose Customer --</option>
+                        @foreach (var c in customers)
+                        {
+                            <option value="@c.CustomerId" data-name="@c.CustomerName">@c.CustomerName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Date <span class="text-danger">*</span></label>
+                    <input type="date" id="invoiceDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+
+            <!-- Section 2: Product Filter & Add -->
+            <div class="card mb-4 border">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h6 class="mb-0">Add Product to Invoice</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold">Product Name (Type to search)</label>
+                            <input list="productList" id="productInput" class="form-control" placeholder="Select product..." autocomplete="off" />
+                            <datalist id="productList">
+                                @foreach (var p in products)
+                                {
+                                    <option value="@p.ProductName" data-id="@p.ProductId" data-price="@p.Price" data-stock="@p.StockCount" data-desc="@p.ProductDescription" label="@p.ProductName - @p.ProductDescription (Avail: @p.StockCount)">
+                                        @p.ProductName
+                                    </option>
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Unit Price (LKR)</label>
+                            <input type="number" id="unitPrice" class="form-control" readonly placeholder="0.00" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Count <span class="text-danger">*</span></label>
+                            <input type="number" id="itemCount" class="form-control" min="1" value="1" />
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="btnAddProduct" class="btn btn-success w-100">
+                                Add Product
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Added Products Table -->
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-hover align-middle" id="invoiceTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 23%;">Product Name</th>
+                            <th style="width: 17%;">Description</th>
+                            <th style="width: 18%;">Price (Editable)</th>
+                            <th style="width: 14%;">Count (Editable)</th>
+                            <th style="width: 13%;" class="text-end">Total (LKR)</th>
+                            <th style="width: 10%;" class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceTableBody">
+                        <tr id="emptyRow">
+                            <td colspan="7" class="text-center text-muted py-4">No products added yet. Use the selector above to add items.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Section 4: Calculation, Payment & Summary -->
+            <div class="row justify-content-end">
+                <div class="col-md-5">
+                    <div class="card bg-light border shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-bold">Amount:</span>
+                                <span class="fw-bold fs-6">LKR <span id="lblAmount">0.00</span></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Discount (%):</span>
+                                <div style="width: 120px;">
+                                    <input type="number" id="discountInput" class="form-control form-control-sm text-end" min="0" max="100" step="0.5" value="0" />
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2 text-muted">
+                                <span>Discount Value:</span>
+                                <span>- LKR <span id="lblDiscountVal">0.00</span></span>
+                            </div>
+
+                            <hr class="my-2" />
+
+                            <div class="d-flex justify-content-between mb-3 text-success">
+                                <span class="fs-5 fw-bold">Total Amount:</span>
+                                <span class="fs-5 fw-bold">LKR <span id="lblTotalAmount">0.00</span></span>
+                            </div>
+
+                            <!-- PAYMENT INPUT -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-dark">Payment:</span>
+                                <div style="width: 140px;">
+                                    <input type="number" id="paymentInput" class="form-control form-control-sm text-end" min="0" step="0.01" value="0.00" />
+                                </div>
+                            </div>
+
+                            <!-- REALTIME BALANCE AMOUNT -->
+                            <div class="d-flex justify-content-between mb-3 text-danger">
+                                <span class="fw-bold">Balance Amount:</span>
+                                <span class="fw-bold fs-6">LKR <span id="lblBalanceAmount">0.00</span></span>
+                            </div>
+
+                            <button type="button" id="btnSubmitInvoice" class="btn btn-success w-100 py-2 fs-6">
+                                Submit Customer Invoice
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let invoiceItems = [];
+
+        function getSelectedProduct(inputText) {
+            const options = document.querySelectorAll("#productList option");
+            const trimmed = inputText.trim().toLowerCase();
+
+            for (let opt of options) {
+                const val = opt.value.trim().toLowerCase();
+                const label = (opt.getAttribute("label") || "").trim().toLowerCase();
+                const text = opt.textContent.trim().toLowerCase();
+
+                if (trimmed === val || trimmed === label || trimmed === text) {
+                    return {
+                        id: parseInt(opt.getAttribute("data-id")),
+                        name: opt.value.trim(),
+                        price: parseFloat(opt.getAttribute("data-price")),
+                        stock: parseInt(opt.getAttribute("data-stock")),
+                        desc: opt.getAttribute("data-desc") || ""
+                    };
+                }
+            }
+            return null;
+        }
+
+        document.getElementById("productInput").addEventListener("input", function () {
+            const selectedProd = getSelectedProduct(this.value);
+            if (selectedProd) {
+                document.getElementById("unitPrice").value = selectedProd.price.toFixed(2);
+            } else {
+                document.getElementById("unitPrice").value = "";
+            }
+        });
+
+        document.getElementById("btnAddProduct").addEventListener("click", function () {
+            const input = document.getElementById("productInput");
+            const countInput = document.getElementById("itemCount");
+            const count = parseInt(countInput.value);
+
+            const selectedProd = getSelectedProduct(input.value);
+
+            if (!selectedProd) {
+                alert("Please select a valid product from the list.");
+                input.focus();
+                return;
+            }
+
+            if (isNaN(count) || count <= 0) {
+                alert("Please enter a valid count greater than 0.");
+                countInput.focus();
+                return;
+            }
+
+            const existingIndex = invoiceItems.findIndex(i => i.productId === selectedProd.id);
+            const currentCountInTable = existingIndex > -1 ? invoiceItems[existingIndex].count : 0;
+
+            if (currentCountInTable + count > selectedProd.stock) {
+                alert(`Cannot add ${count} units. Available stock is only ${selectedProd.stock} (Currently added: ${currentCountInTable}).`);
+                return;
+            }
+
+            if (existingIndex > -1) {
+                invoiceItems[existingIndex].count += count;
+                invoiceItems[existingIndex].totalPrice = invoiceItems[existingIndex].count * invoiceItems[existingIndex].price;
+            } else {
+                invoiceItems.push({
+                    productId: selectedProd.id,
+                    productName: selectedProd.name,
+                    productDescription: selectedProd.desc,
+                    price: selectedProd.price,
+                    stock: selectedProd.stock,
+                    count: count,
+                    totalPrice: count * selectedProd.price
+                });
+            }
+
+            input.value = "";
+            document.getElementById("unitPrice").value = "";
+            countInput.value = "1";
+
+            renderTable();
+        });
+
+        function renderTable() {
+            const tbody = document.getElementById("invoiceTableBody");
+            tbody.innerHTML = "";
+
+            if (invoiceItems.length === 0) {
+                tbody.innerHTML = `<tr id="emptyRow"><td colspan="7" class="text-center text-muted py-4">No products added yet. Use the selector above to add items.</td></tr>`;
+                calculateSummary();
+                return;
+            }
+
+            invoiceItems.forEach((item, index) => {
+                const tr = document.createElement("tr");
+                tr.setAttribute("id", `row-${index}`);
+
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="fw-bold">${item.productName}</td>
+                    <td class="text-muted small">${item.productDescription}</td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text px-1 bg-light text-muted" style="font-size: 0.75rem;">LKR</span>
+                            <input type="number" step="0.01" min="0" class="form-control text-end row-price-input"
+                                   data-index="${index}" value="${item.price.toFixed(2)}" />
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" min="1" max="${item.stock}" class="form-control form-control-sm text-center row-count-input"
+                               data-index="${index}" value="${item.count}" style="max-width: 90px;" />
+                    </td>
+                    <td class="fw-bold text-end row-total-cell">${item.totalPrice.toFixed(2)}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete-row" data-index="${index}">
+                            Delete
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            // Editable Price Handlers
+            document.querySelectorAll(".row-price-input").forEach(inp => {
+                inp.addEventListener("input", function () {
+                    const idx = parseInt(this.getAttribute("data-index"));
+                    let val = parseFloat(this.value);
+
+                    if (isNaN(val) || val < 0) {
+                        val = 0;
+                    }
+
+                    invoiceItems[idx].price = val;
+                    invoiceItems[idx].totalPrice = val * invoiceItems[idx].count;
+
+                    const row = document.getElementById(`row-${idx}`);
+                    if (row) {
+                        row.querySelector(".row-total-cell").innerText = invoiceItems[idx].totalPrice.toFixed(2);
+                    }
+
+                    calculateSummary();
+                });
+            });
+
+            // Editable Count Handlers
+            document.querySelectorAll(".row-count-input").forEach(inp => {
+                inp.addEventListener("input", function () {
+                    const idx = parseInt(this.getAttribute("data-index"));
+                    let val = parseInt(this.value);
+                    const maxStock = invoiceItems[idx].stock;
+
+                    if (isNaN(val) || val <= 0) val = 1;
+                    if (val > maxStock) {
+                        alert(`Count cannot exceed available stock (${maxStock}).`);
+                        val = maxStock;
+                        this.value = val;
+                    }
+
+                    invoiceItems[idx].count = val;
+                    invoiceItems[idx].totalPrice = val * invoiceItems[idx].price;
+
+                    const row = document.getElementById(`row-${idx}`);
+                    if (row) {
+                        row.querySelector(".row-total-cell").innerText = invoiceItems[idx].totalPrice.toFixed(2);
+                    }
+
+                    calculateSummary();
+                });
+            });
+
+            // Row Deletion Handlers
+            document.querySelectorAll(".btn-delete-row").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    const idx = parseInt(this.getAttribute("data-index"));
+                    invoiceItems.splice(idx, 1);
+                    renderTable();
+                });
+            });
+
+            calculateSummary();
+        }
+
+        function calculateSummary() {
+            const subtotal = invoiceItems.reduce((acc, curr) => acc + curr.totalPrice, 0);
+            let discountPercent = parseFloat(document.getElementById("discountInput").value);
+            if (isNaN(discountPercent) || discountPercent < 0) discountPercent = 0;
+            if (discountPercent > 100) discountPercent = 100;
+
+            const discountValue = (subtotal * discountPercent) / 100;
+            const totalAmount = subtotal - discountValue;
+
+            let payment = parseFloat(document.getElementById("paymentInput").value);
+            if (isNaN(payment) || payment < 0) payment = 0;
+
+            const balance = totalAmount - payment;
+
+            document.getElementById("lblAmount").innerText = subtotal.toFixed(2);
+            document.getElementById("lblDiscountVal").innerText = discountValue.toFixed(2);
+            document.getElementById("lblTotalAmount").innerText = totalAmount.toFixed(2);
+            document.getElementById("lblBalanceAmount").innerText = balance.toFixed(2);
+        }
+
+        document.getElementById("discountInput").addEventListener("input", calculateSummary);
+        document.getElementById("paymentInput").addEventListener("input", calculateSummary);
+
+        document.getElementById("btnSubmitInvoice").addEventListener("click", async function () {
+            const invoiceNo = document.getElementById("invoiceNo").value.trim();
+            const customerSelect = document.getElementById("customerSelect");
+            const customerId = parseInt(customerSelect.value);
+            const customerName = customerSelect.options[customerSelect.selectedIndex]?.getAttribute("data-name");
+            const invoiceDate = document.getElementById("invoiceDate").value;
+
+            if (!invoiceNo) {
+                alert("Please enter an Invoice No.");
+                document.getElementById("invoiceNo").focus();
+                return;
+            }
+
+            if (!customerId || !customerName) {
+                alert("Please select a Customer.");
+                return;
+            }
+
+            if (!invoiceDate) {
+                alert("Please select a Date.");
+                return;
+            }
+
+            if (invoiceItems.length === 0) {
+                alert("Please add at least one product.");
+                return;
+            }
+
+            const subtotal = invoiceItems.reduce((acc, curr) => acc + curr.totalPrice, 0);
+            let discount = parseFloat(document.getElementById("discountInput").value) || 0;
+            const totalAmount = subtotal - (subtotal * discount / 100);
+            const payment = parseFloat(document.getElementById("paymentInput").value) || 0;
+
+            const payload = {
+                invoiceNo: invoiceNo,
+                customerId: customerId,
+                customerName: customerName,
+                date: invoiceDate,
+                amount: subtotal,
+                discount: discount,
+                totalAmount: totalAmount,
+                payment: payment,
+                items: invoiceItems
+            };
+
+            this.disabled = true;
+            this.innerText = "Submitting...";
+
+            try {
+                const res = await fetch('@Url.Action("Create", "CustomerInvoices")', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    alert("Customer Invoice generated successfully and stock reduced!");
+                    window.location.href = result.redirectUrl;
+                } else {
+                    alert(result.message || "Failed to save invoice.");
+                    document.getElementById("btnSubmitInvoice").disabled = false;
+                    document.getElementById("btnSubmitInvoice").innerText = "Submit Customer Invoice";
+                }
+            } catch (err) {
+                alert("Server error: " + err.message);
+                document.getElementById("btnSubmitInvoice").disabled = false;
+                document.getElementById("btnSubmitInvoice").innerText = "Submit Customer Invoice";
+            }
+        });
+    </script>
+}

@@ -1,0 +1,62 @@
+﻿/* ==========================================================================
+   ShanDistribution - Custom Corporate Navbar Styles
+   ========================================================================== */
+
+/* Navbar Background & Brand */
+.navbar-custom {
+    background-color: #14532d !important; /* Deep Emerald */
+    border-bottom: 2px solid #15803d;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+    .navbar-custom .navbar-brand {
+        font-weight: 800;
+        font-size: 1.25rem;
+        letter-spacing: 0.5px;
+        color: #ffffff !important;
+    }
+
+    /* Nav Links Base Style */
+    .navbar-custom .nav-link {
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-weight: 500;
+        font-size: 0.92rem;
+        padding: 0.55rem 0.85rem !important;
+        border-radius: 6px 6px 0 0;
+        border-bottom: 2.5px solid transparent;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .navbar-custom .nav-link:hover {
+            color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+    /* Active Page Highlight (Pill + Emerald Glow Bar) */
+    .navbar-custom .nav-item .nav-link.active-nav {
+        background-color: rgba(255, 255, 255, 0.18) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-bottom: 2.5px solid #4ade80 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Admin / Settings Special Highlight */
+    .navbar-custom .nav-link.nav-admin {
+        color: #facc15 !important;
+        font-weight: 600;
+    }
+
+        .navbar-custom .nav-link.nav-admin.active-nav {
+            border-bottom-color: #facc15 !important;
+            color: #fde047 !important;
+        }
+
+    /* Mobile Toggler */
+    .navbar-custom .navbar-toggler {
+        border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    .navbar-custom .navbar-toggler-icon {
+        filter: invert(1);
+    }
