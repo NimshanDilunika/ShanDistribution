@@ -90,4 +90,20 @@ The system uses an N-Tier decoupled MVC architecture with Dependency Injection, 
 |                         Data Access Layer & Storage                           |
 |       Entity Framework Core (Code-First) · MultipleActiveResultSets (MARS)    |
 |                          Microsoft SQL Server Database                        |
-+-------------------------------------------------------------------------------+
++-------------------------------------------------------------------------------+                        4. Technologies UsedCategoryTechnologyVersionPurposeBackend FrameworkASP.NET Core8.0 / 9.0High-performance enterprise web application platformLanguageC#12.0Core backend, domain logic, and DTO contractsData AccessEntity Framework CoreLatestORM for database migrations, relationships, and LINQ queriesDatabaseMicrosoft SQL Server2019+Relational storage for transactions and accountingConnection PoolingMARS (MultipleActiveResultSets)EnabledPrevents data reader collisions during nested query executionFrontend UIRazor Pages / Views (MVC)LatestServer-side HTML renderingStylingBootstrap5.3+Modern responsive layouts and typographyIconographyBootstrap IconsLatestEnterprise UI iconographyClient ScriptingVanilla JavaScriptES6+Real-time billing calculations and DOM updatesPrint & ReportingCSS3 @media printW3C StandardA4 letterhead pagination and print-chrome suppression5. Installation & SetupPrerequisites.NET SDK 8.0 or higherMicrosoft SQL Server (LocalDB, Express, or standard instance)Visual Studio 2022 / VS Code / .NET CLIGitStep 1 — Clone the RepositoryBashgit clone [https://github.com/NimshanDilunika/ShanDistribution.git](https://github.com/NimshanDilunika/ShanDistribution.git)
+cd ShanDistribution
+Step 2 — Configure the Connection StringOpen appsettings.json (or appsettings.Development.json) and configure your SQL Server credentials:JSON{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ShanDistributionDb;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+Step 3 — Apply Database MigrationsRun the Entity Framework migration command to construct the schema, keys, and relational constraints:Bashdotnet ef database update
+Step 4 — Launch the ApplicationStart the Kestrel web server:Bashdotnet run
+Access the application dashboard at https://localhost:5001 or http://localhost:5000.6. Database Schema & MigrationsThe database models mirror commercial wholesale distribution operations:Entity TablePrimary KeyDescription & RoleCustomersCustomerIdStores customer billing profiles, contact persons, telephone numbers, and addresses.SuppliersSupplierIdStores confectionery manufacturing and regional distribution partner details.ProductsProductIdTracks confectionery inventory levels, unit descriptions, and standard wholesale prices.CustomerInvoicesCIIdRecords sales transactions, gross amounts, trade discount percentages, net payable, and balances.InvoiceProductsInvoiceProductIdBilled line items storing exact point-of-sale snapshots of quantities and negotiated prices.InvoicePaymentsInvoicePaymentIdPayment logs capturing cash collections, dates, and installments applied to an invoice.SupplierBillsSBIdCaptures supplier deliveries, gross bills, vendor trade deductions, and balance obligations.BillProductsBillProductIdLine-item records of confectionery stock received from suppliers.BillPaymentsBillPaymentIdRecords cash disbursements and bank settlements paid out to suppliers.
